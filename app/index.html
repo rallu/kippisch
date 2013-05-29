@@ -3,11 +3,52 @@
     <head>
         <title></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href='http://fonts.googleapis.com/css?family=Merriweather+Sans:300|Exo:200' rel='stylesheet' type='text/css'>
         <link href="css/kippis.css" rel="stylesheet">
         <script src="js/jquery-1.9.0/jquery.min.js"></script>
         <script src="js/kippis.js"></script>
     </head>
     <body>
-        
+        <header>
+            Kipp.is
+        </header>
+        <nav>
+            <a href="#graphsection">Graph</a>
+            <a href="#settingssection">Settings</a>
+        </nav>
+        <section class="drink">
+            <div class="drinktypescontainer">
+                <ul class="drinktypes clearfix">
+                    <li><span>Beer</span></li>
+                    <li><span>Wine</span></li>
+                    <li><span>Shot</span></li>
+                </ul>
+            </div>
+            <div class="alcoholcontent slider clearfix">
+                <div class="btnless"></div>
+                <div class="amount">5%</div>
+                <div class="btnmore"></div>
+            </div>
+            <div class="servingsize slider clearfix">
+                <div class="btnless"></div>
+                <div class="amount">33cl</div>
+                <div class="btnmore"></div>
+            </div>
+            <button class="add">Start drinking!</button>
+        </section>
+        <section id="graphsection" class="graph">
+            <canvas id="graph" width="400" height="300"></canvas>
+        </section>
+        <section id="settingssection" class="settings">
+            <div class="weight slider clearfix">
+                <div class="btnless"></div>
+                <div class="amount">88kg</div>
+                <div class="btnmore"></div>
+            </div>
+            <div class="gender">
+                <span class="male selected"></span>
+                <span class="female"></span>
+            </div>
+        </section>
     </body>
 </html>

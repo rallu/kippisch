@@ -1,12 +1,119 @@
 /* 
     Document   : kippis
     Created on : 29.5.2013, 13:12:30
-    Author     : Juha-Pekka Rajaniemi <juha-pekka.rajaniemi at yle.fi>
+    Author     : Juha-Pekka Rajaniemi <juha.rajaniemi at gmail.com>
     Description:
-        Purpose of the stylesheet follows.
+        Kippis style
 */
 
-root { 
+
+html, body  {
+    padding: 1%;
+    margin: 0;
+    background-color: #010410;
+    color: white;
+    font-family: 'Merriweather Sans', sans-serif;
+}
+
+header {
+    font-family: 'Exo', sans-serif;
+    font-size: 34px;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    width: 40%;
+    margin: 5%;
+    background-color: #152255;
+    height: 40px;
+    line-height: 40px;
+    float: left;
     display: block;
 }
 
+section.drink {
+    clear: both;
+}
+
+.drinktypescontainer {
+    width: 100%;
+    overflow: hidden;
+}
+
+.drinktypes {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 300%;
+}
+
+.drinktypes li {
+    float: left;
+    width: 33.3333%;
+    text-align: center;
+    font-size: 20px;
+}
+
+.drinktypes li span {
+    display: block;
+    padding: 20px 10px;
+    border: 1px solid white;
+}
+
+.slider {
+    margin: 20px 0px;
+}
+
+.slider div {
+    float: left;
+    height: 40px;
+    line-height: 40px;
+    font-size: 32px;
+    text-align: center;
+}
+
+.slider div.amount {
+    width: 70%;
+}
+
+.slider div.btnless, .slider div.btnmore {
+    width: 14%;
+    border: 1px solid white;
+}
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+button.add {
+    margin: 10% 10%;
+    padding: 20px 0px;
+    width: 80%;
+    background-color: #00a107;
+    border: none;
+    color: white;
+    font-size: 32px;
+}
+
+.gender {
+    text-align: center;
+}
+
+.gender span {
+    margin: 5px;
+    display: inline-block;
+    border: 1px solid white;
+    height: 100px;
+    width: 100px;
+}
+
+.gender span.selected {
+    border: 1px solid red;
+}
