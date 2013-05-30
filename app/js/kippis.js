@@ -29,6 +29,11 @@ var drinkhistory = [
 ];
 
 (function() {
+    /**
+     * App wide variables
+     * 
+     * @object 
+     */
     var vars = {
         graph: null,
         ch: 300,
@@ -40,6 +45,20 @@ var drinkhistory = [
         margin: 10
     };
     
+    /**
+     * mg's of alcohol per minute
+     * 
+     * @type Array
+     */
+    var drinktable = [
+        0,0,0,0,0,5,5,5,0,0,5,0,15,0,0,16.5
+    ];
+    
+    /**
+     * Public methods to use in kippis variable.
+     * 
+     * @type type
+     */
     var public = {
         init: function() {
             public.initEvents();
@@ -69,13 +88,59 @@ var drinkhistory = [
                 }
                 elem.html(amount + "%");
             });
+            
+            $(".servingsize.slider").find(".btnmore").on('click', function(event)  {
+                event.preventDefault();
+                var elem = $(this).parent().find('.amount');
+                var amount = parseFloat(elem.html());
+                amount += 1;
+                if (amount > 100)
+                    amount = 100;
+                elem.html(amount + "cl");
+            });
+            $(".servingsize.slider").find(".btnless").on('click', function(event)  {
+                event.preventDefault();
+                var elem = $(this).parent().find('.amount');
+                var amount = parseFloat(elem.html());
+                amount -= 1;
+                if (amount < 0) {
+                    amount = 0;
+                }
+                elem.html(amount + "cl");
+            });
+            
+            $(".weight.slider").find(".btnmore").on('click', function(event)  {
+                event.preventDefault();
+                var elem = $(this).parent().find('.amount');
+                var amount = parseFloat(elem.html());
+                amount += 1;
+                elem.html(amount + "kg");
+            });
+            $(".weight.slider").find(".btnless").on('click', function(event)  {
+                event.preventDefault();
+                var elem = $(this).parent().find('.amount');
+                var amount = parseFloat(elem.html());
+                amount -= 1;
+                if (amount < 0) {
+                    amount = 0;
+                }
+                elem.html(amount + "kg");
+            });
+            
+            $(".gender span").on('click', function(event) {
+                $(this).parent().find("span").removeClass("selected");
+                $(this).addClass("selected");
+            });
+            
+            $("button.add").on('click', function(event) {
+                var cl = parseInt($(".servingsize.slider .amount").html()) * 10;
+                var percent = parseFloat($(".alcoholcontent.slider .amount").html()) / 100;
+                drinktable.push(cl * percent);
+                public.drawGraph();
+            });
         },
                 
         drawGraph: function() {
-            var drinktable = [
-                0,0,0,0,0,5,5,5,0,0,5,0,15,0,0,16.5
-            ];
-            
             drawGraph(alctable(drinktable));
         },
         
@@ -91,7 +156,7 @@ var drinkhistory = [
         
         g.moveTo(0,vars.ch - vars.margin);
         for (var i = 0; i < table.length; i++) {
-            g.lineTo(10 + i * 10, vars.ch - vars.margin - table[i] * 100 * (vars.ch - (2* vars.margin)));
+            g.lineTo(2 + i * 2, vars.ch - vars.margin - table[i] * 100 * (vars.ch - (2* vars.margin)));
         }
         g.stroke();
     };
