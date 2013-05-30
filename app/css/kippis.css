@@ -6,19 +6,21 @@
         Kippis style
 */
 
-
 html, body  {
     padding: 1%;
     margin: 0;
-    background-color: #010410;
-    color: white;
+    /* correct bg color */
+    background-color: hsl(204,11,100);
+    color: black;
     font-family: 'Merriweather Sans', sans-serif;
 }
 
 header {
     font-family: 'Exo', sans-serif;
-    font-size: 34px;
+    font-size: 60px;
     text-align: center;
+    color: #FFAF3C;
+    padding: 30px 0px;
 }
 
 nav a {
@@ -34,6 +36,14 @@ nav a {
     display: block;
 }
 
+section {
+    background-color: #F5EEE4;
+    margin-bottom: 20px;
+    border-radius: 3px;
+    padding: 10px;
+    border-top: 6px solid #FFAF3C;
+}
+
 section.drink {
     clear: both;
 }
@@ -41,6 +51,23 @@ section.drink {
 .drinktypescontainer {
     width: 100%;
     overflow: hidden;
+}
+
+.drinktypesoutercontainer {
+    position: relative;
+}
+
+.drinktypesoutercontainer .btnless, .drinktypesoutercontainer .btnmore {
+    position: absolute;
+    font-size: 32px;
+    top: 20px;
+    left: 5%;
+    cursor: pointer;
+}
+
+.drinktypesoutercontainer .btnmore {
+    left: auto;
+    right: 7%;
 }
 
 .drinktypes {
@@ -54,13 +81,12 @@ section.drink {
     float: left;
     width: 33.3333%;
     text-align: center;
-    font-size: 20px;
+    font-size: 40px;
 }
 
 .drinktypes li span {
     display: block;
     padding: 20px 10px;
-    border: 1px solid white;
 }
 
 .slider {
@@ -81,7 +107,7 @@ section.drink {
 
 .slider div.btnless, .slider div.btnmore {
     width: 14%;
-    border: 1px solid white;
+    cursor: pointer;
 }
 
 .clearfix:after {
@@ -96,10 +122,11 @@ button.add {
     margin: 10% 10%;
     padding: 20px 0px;
     width: 80%;
-    background-color: #00a107;
+    background-color: #68aa8f;
     border: none;
     color: white;
     font-size: 32px;
+    border-radius: 3px;
 }
 
 .gender {
@@ -109,11 +136,19 @@ button.add {
 .gender span {
     margin: 5px;
     display: inline-block;
-    border: 1px solid white;
     height: 100px;
     width: 100px;
+    font-size: 40px;
+    line-height: 100px;
+    font-weight: bold;
+    background-color: #E4F4FF;
+    border-radius: 5px;
 }
 
 .gender span.selected {
-    border: 1px solid red;
+    background-color: #FFAE3C;
+}
+
+canvas {
+    width: 100%;
 }

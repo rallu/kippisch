@@ -42,10 +42,15 @@ var drinkhistory = [
     
     var public = {
         init: function() {
+            public.initEvents();
             var graphelem = document.getElementById("graph");
             vars.graph = graphelem.getContext("2d");
             vars.cw = graphelem.getAttribute("width");
             vars.ch = graphelem.getAttribute("height");
+        },
+                
+        initEvents: function() {
+            
         },
                 
         drawGraph: function() {
@@ -65,7 +70,7 @@ var drinkhistory = [
         g.clearRect(0,0,vars.cw,vars.ch);
         //crisp lines
         g.translate(0.5, 0.5);
-        g.strokeStyle = "white";
+        g.strokeStyle = "black";
         
         g.moveTo(0,vars.ch - vars.margin);
         for (var i = 0; i < table.length; i++) {
