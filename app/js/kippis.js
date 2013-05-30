@@ -50,11 +50,28 @@ var drinkhistory = [
         },
                 
         initEvents: function() {
-            
+            $(".alcoholcontent.slider").find(".btnmore").on('click', function(event)  {
+                event.preventDefault();
+                var elem = $(this).parent().find('.amount');
+                var amount = parseFloat(elem.html());
+                amount += 0.5;
+                if (amount > 100)
+                    amount = 100;
+                elem.html(amount + "%");
+            });
+            $(".alcoholcontent.slider").find(".btnless").on('click', function(event)  {
+                event.preventDefault();
+                var elem = $(this).parent().find('.amount');
+                var amount = parseFloat(elem.html());
+                amount -= 0.5;
+                if (amount < 0) {
+                    amount = 0;
+                }
+                elem.html(amount + "%");
+            });
         },
                 
         drawGraph: function() {
-            //drawGraph();
             var drinktable = [
                 0,0,0,0,0,5,5,5,0,0,5,0,15,0,0,16.5
             ];

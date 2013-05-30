@@ -3,7 +3,9 @@
     Created on : 29.5.2013, 13:12:30
     Author     : Juha-Pekka Rajaniemi <juha.rajaniemi at gmail.com>
     Description:
-        Kippis style
+        Kippis style.
+
+        Colour palette: https://kuler.adobe.com/create/color-wheel/?base=2&rule=Complementary&selected=2&name=My%20Kuler%20Theme&mode=hsv&rgbvalues=0.7932164279940307,0.9201887967696589,1,0.48950209975516257,0.8029657227126004,1,0.8932164279940307,0.9587852879977131,1,0.96,0.9327137773631192,0.8945130656715338,1,0.6811981022613891,0.23487544542789074
 */
 
 html, body  {
@@ -143,6 +145,7 @@ button.add {
     font-weight: bold;
     background-color: #E4F4FF;
     border-radius: 5px;
+    cursor: pointer;
 }
 
 .gender span.selected {
