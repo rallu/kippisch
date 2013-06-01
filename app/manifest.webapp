@@ -1,0 +1,21 @@
+{
+    "version": "0.1",
+    "name": "Kipp.is",
+    "description": "Track your drinking",
+    "launch_path": "/index.html",
+    "icons": {
+        "16": "/img/icons/mortar-16.png",
+        "48": "/img/icons/mortar-48.png",
+        "128": "/img/icons/mortar-128.png"
+    },
+    "developer": {
+        "name": "Juha-Pekka Rajaniemi",
+        "url": "http://kipp.is"
+    },
+    "installs_allowed_from": ["*"],
+    "locales": {
+    },
+    "default_locale": "en",
+    "permissions": {
+    }
+}
