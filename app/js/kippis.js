@@ -1,35 +1,39 @@
 var kippis = null;
-
+var dev = false;
 var startDate = new Date(2013,5,29,19,40,0,0);
 
 //populated history
-var drinkhistory = [
-    {
-        time: new Date(2013, 5, 29, 20, 0, 0, 0),
-        percent: 5.4,
-        amount: 33
-    },
-    {
-        time: new Date(2013, 5, 29, 20, 15, 0, 0),
-        percent: 4.7,
-        amount: 33
-    },
-    {
-        time: new Date(2013, 5, 29, 20, 35, 0, 0),
-        percent: 4.7,
-        amount: 50
-    },
-    {
-        time: new Date(2013, 5, 29, 21, 30, 0, 0),
-        percent: 40,
-        amount: 4
-    },
-    {
-        time: new Date(2013, 5, 29, 21, 35, 0, 0),
-        percent: 4.7,
-        amount: 33
-    }
-];
+if (dev) {
+    var drinkhistory = [
+        {
+            time: new Date(2013, 5, 29, 20, 0, 0, 0),
+            percent: 5.4,
+            amount: 33
+        },
+        {
+            time: new Date(2013, 5, 29, 20, 15, 0, 0),
+            percent: 4.7,
+            amount: 33
+        },
+        {
+            time: new Date(2013, 5, 29, 20, 35, 0, 0),
+            percent: 4.7,
+            amount: 50
+        },
+        {
+            time: new Date(2013, 5, 29, 21, 30, 0, 0),
+            percent: 40,
+            amount: 4
+        },
+        {
+            time: new Date(2013, 5, 29, 21, 35, 0, 0),
+            percent: 4.7,
+            amount: 33
+        }
+    ];
+} else {
+    drinkhistory = [];
+}
 
 (function() {
     /**
@@ -46,7 +50,8 @@ var drinkhistory = [
         malefactor: 0.58,
         femalefactor: 0.49,
         margin: 10,
-        alcoholdensity: 0.789
+        alcoholdensity: 0.789,
+        startDate: null
     };
     
     var scrollleft = 0;
@@ -58,7 +63,6 @@ var drinkhistory = [
      */
     var public = {
         init: function() {
-            public.initEvents();
             var graphelem = document.getElementById("graph");
             vars.graph = graphelem.getContext("2d");
             vars.cw = graphelem.getAttribute("width");
@@ -66,6 +70,8 @@ var drinkhistory = [
             
             //crisp lines
             vars.graph.translate(0.5, 0.5);
+            
+            public.initEvents();
         },
                 
         initEvents: function() {
@@ -171,14 +177,28 @@ var drinkhistory = [
                 public.drawGraph();
             });
             
+            $(window).resize(function() {
+                var w = $("section.graph").width();
+                $("canvas").attr("width", w);
+                vars.cw = w;
+                public.drawGraph();
+            }).trigger('resize');
+            
             $("button.add").on('click', function(event) {
                 var cl = parseInt($(".servingsize.slider .amount").html());
                 var percent = parseFloat($(".alcoholcontent.slider .amount").html());
                 var n = {
-                    time: new Date(2013, 5, 29, 23, 00, 0, 0),
+                    time: new Date(),
                     percent: percent,
                     amount: cl
                 };
+                
+                if (drinkhistory.length == 0) {
+                    //startDate = new Date(n.time.getYear(), n.time.getMonth(), n.time.getDay(), n.time.getHours(), 0, 0, 0);
+                    startDate = new Date();
+                    startDate.setMinutes(0);
+                }
+                
                 drinkhistory.push(n);
                 public.drawGraph();
             });
@@ -188,14 +208,17 @@ var drinkhistory = [
             var points = alctable();
             
             var g = vars.graph;
-            g.clearRect(0,0,1000,1000);
+            g.clearRect(0,0,vars.cw,vars.ch);
             g.font = "9pt arial";
             
             var bottomy = vars.ch - vars.margin - 30;
             var leftx = 40;
             var pixelsperminute = 4;
             var pixelsperpromille = (vars.ch - 30 - vars.margin * 2) / 3;
-            var lastminute = points[points.length-1].endx * pixelsperminute + leftx;
+            
+            if (points.length > 0) {
+                var lastminute = points[points.length-1].endx * pixelsperminute + leftx;
+            }
 
             //scrollbar
             var barwidth = vars.cw - leftx - 10;
@@ -221,6 +244,10 @@ var drinkhistory = [
             g.lineTo(leftx, 0);
             g.stroke();
 
+            if (points.length === 0) {
+                return;
+            }
+
             g.save();
             g.rect(leftx, 0, vars.cw, vars.ch);
             g.clip();
@@ -229,9 +256,8 @@ var drinkhistory = [
             //times
             g.textAlign = "center";
             var printdate = new Date(startDate.getTime());
-            console.log(Math.ceil(lastminute / (30 * pixelsperminute)));
-            for (var i = 0; i < Math.ceil(lastminute / 30); i++) {
-                g.fillText(printdate.getHours() + ":" + printdate.getMinutes(), leftx + i * 30 * pixelsperminute, bottomy + 15);
+            for (var i = 0; i < Math.ceil(lastminute / 30) / 2; i++) {
+                g.fillText(printdate.getHours() + ":" + pad(printdate.getMinutes()), leftx + i * 30 * pixelsperminute, bottomy + 15);
                 printdate.setTime(printdate.getTime() + 30 * 60000);
             }
             
@@ -342,7 +368,7 @@ var drinkhistory = [
         return poi;
     }
     
-    
+    function pad(n){return n<10 ? '0'+n : n}
     
     
     kippis = public;
