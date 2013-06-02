@@ -60,6 +60,9 @@ var drinkhistory = [
             vars.graph = graphelem.getContext("2d");
             vars.cw = graphelem.getAttribute("width");
             vars.ch = graphelem.getAttribute("height");
+            
+            //crisp lines
+            vars.graph.translate(0.5, 0.5);
         },
                 
         initEvents: function() {
@@ -110,6 +113,7 @@ var drinkhistory = [
                 amount += 1;
                 vars.personweight = amount;
                 elem.html(amount + "kg");
+                public.drawGraph();
             });
             $(".weight.slider").find(".btnless").on('click', function(event)  {
                 event.preventDefault();
@@ -121,6 +125,7 @@ var drinkhistory = [
                 }
                 vars.personweight = amount;
                 elem.html(amount + "kg");
+                public.drawGraph();
             });
             
             $(".gender span").on('click', function(event) {
@@ -131,6 +136,7 @@ var drinkhistory = [
                 } else {
                     vars.ismale = false;
                 }
+                public.drawGraph();
             });
             
             $("button.add").on('click', function(event) {
@@ -147,34 +153,63 @@ var drinkhistory = [
         },
                 
         drawGraph: function() {
-            //drawGraph(alctable(drinktable));
             var points = alctable();
-            drawGraph(points);
+            
+            var g = vars.graph;
+            g.clearRect(0,0,1000,1000);
+            g.font = "12pt arial";
+            
+            var bottomy = vars.ch - vars.margin - 30;
+            var leftx = 40;
+            var pixelsperminute = 3;
+            var pixelsperpromille = (vars.ch - 30 - vars.margin * 2) / 3;
+
+            //horizontal lines
+            
+            g.lineWidth = 0.5;
+            g.strokeStyle = "#AAAAAA";
+            g.textAlign = "right";
+            for (var i = 0; i < 3.5; i += 0.5) {
+                g.beginPath();
+                g.moveTo(leftx, bottomy - pixelsperpromille * i);
+                g.lineTo(vars.cw, bottomy - pixelsperpromille * i);
+                g.stroke();
+                g.fillText(i, leftx - 5, bottomy - pixelsperpromille * i);
+            }
+            
+            
+            g.beginPath();
+            g.moveTo(leftx, bottomy);
+            g.lineTo(leftx, 0);
+            g.stroke();
+            
+            //draw graph line
+            g.strokeStyle = "#FFAF3C";
+            g.lineWidth = 2;
+            g.beginPath();
+            g.moveTo(leftx,bottomy);
+            g.lineTo(leftx + pixelsperminute * points[0].startx, bottomy);
+            for (var i = 0; i < points.length; i++) {
+                g.quadraticCurveTo(leftx + pixelsperminute * points[i].startx, bottomy - points[i].peaky * pixelsperpromille, leftx + pixelsperminute * points[i].peakx, bottomy - points[i].peaky * pixelsperpromille);
+                if (points[i].endx > points[i].peakx) {
+                    g.lineTo(leftx + pixelsperminute * points[i].endx, bottomy - points[i].endy * pixelsperpromille);
+                }
+            }
+            g.stroke();
+            
+            //Draw dots on line
+            for (var i = 0; i < points.length; i++) {
+                g.beginPath();
+                g.arc(leftx + points[i].startx * pixelsperminute, bottomy - points[i].starty * pixelsperpromille, 4, 0, 2 * Math.PI, false);
+                g.fillStyle = 'white';
+                g.fill();
+                g.lineWidth = 2;
+                g.strokeStyle = '#FFAF3C';
+                g.stroke();
+            }
         },
         
         
-    };
-    
-    var drawGraph = function(points) {
-        var g = vars.graph;
-        g.clearRect(0,0,1000,1000);
-        //crisp lines
-        g.translate(0.5, 0.5);
-        g.strokeStyle = "black";
-        
-        var bottomy = vars.ch - vars.margin;
-                
-        g.moveTo(0,bottomy);
-        g.lineTo(points[0].startx, bottomy);
-
-        for (var i = 0; i < points.length; i++) {
-            g.quadraticCurveTo(points[i].startx, bottomy - points[i].peaky * 200, points[i].peakx, bottomy - points[i].peaky * 200);
-            //g.lineTo(points[i].peakx, bottomy - points[i].peaky * 200);
-            if (points[i].endx > points[i].peakx) {
-                g.lineTo(points[i].endx, bottomy - points[i].endy * 200);
-            }
-        }
-        g.stroke();
     };
     
     function alctable() {
