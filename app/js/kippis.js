@@ -2,6 +2,7 @@ var kippis = null;
 
 var startDate = new Date(2013,5,29,19,40,0,0);
 
+//populated history
 var drinkhistory = [
     {
         time: new Date(2013, 5, 29, 20, 0, 0, 0),
@@ -10,8 +11,8 @@ var drinkhistory = [
     },
     {
         time: new Date(2013, 5, 29, 20, 15, 0, 0),
-        percent: 14.3,
-        amount: 25
+        percent: 4.7,
+        amount: 33
     },
     {
         time: new Date(2013, 5, 29, 20, 35, 0, 0),
@@ -47,6 +48,8 @@ var drinkhistory = [
         margin: 10,
         alcoholdensity: 0.789
     };
+    
+    var scrollleft = 0;
     
     /**
      * Public methods to use in kippis variable.
@@ -139,6 +142,35 @@ var drinkhistory = [
                 public.drawGraph();
             });
             
+            var dragging = false;
+            var lastx = 0;
+            var lasty = 0;
+            $("canvas").on('mousedown', function(event) {
+                dragging = true;
+                lastx = event.pageX;
+                lasty = event.pageY;
+            }).on('mouseup mouseout', function() {
+                dragging = false;
+            }).on('mousemove', function(event) {
+                if (!dragging)
+                    return;
+                
+                event.preventDefault();
+                
+                var xmove = event.pageX - lastx;
+                var ymove = event.pageY - lasty;
+                
+                scrollleft += xmove;
+                if (scrollleft > 0) {
+                    scrollleft = 0;
+                }
+                
+                lastx = event.pageX;
+                lasty = event.pageY;
+                
+                public.drawGraph();
+            });
+            
             $("button.add").on('click', function(event) {
                 var cl = parseInt($(".servingsize.slider .amount").html());
                 var percent = parseFloat($(".alcoholcontent.slider .amount").html());
@@ -157,17 +189,25 @@ var drinkhistory = [
             
             var g = vars.graph;
             g.clearRect(0,0,1000,1000);
-            g.font = "12pt arial";
+            g.font = "9pt arial";
             
             var bottomy = vars.ch - vars.margin - 30;
             var leftx = 40;
-            var pixelsperminute = 3;
+            var pixelsperminute = 4;
             var pixelsperpromille = (vars.ch - 30 - vars.margin * 2) / 3;
+            var lastminute = points[points.length-1].endx * pixelsperminute + leftx;
+
+            //scrollbar
+            var barwidth = vars.cw - leftx - 10;
+            g.fillStyle = "#DDDDDD";
+            g.fillRect(leftx, bottomy + 25, barwidth, 10);
+            g.fillStyle = "#FFAF3C";
+            g.fillRect(leftx + 1 + (-1* scrollleft / lastminute) * vars.cw, bottomy + 26, 100, 8);
 
             //horizontal lines
-            
             g.lineWidth = 0.5;
             g.strokeStyle = "#AAAAAA";
+            g.fillStyle = "#555555";
             g.textAlign = "right";
             for (var i = 0; i < 3.5; i += 0.5) {
                 g.beginPath();
@@ -176,12 +216,24 @@ var drinkhistory = [
                 g.stroke();
                 g.fillText(i, leftx - 5, bottomy - pixelsperpromille * i);
             }
-            
-            
             g.beginPath();
             g.moveTo(leftx, bottomy);
             g.lineTo(leftx, 0);
             g.stroke();
+
+            g.save();
+            g.rect(leftx, 0, vars.cw, vars.ch);
+            g.clip();
+            g.translate(scrollleft, 0);
+
+            //times
+            g.textAlign = "center";
+            var printdate = new Date(startDate.getTime());
+            console.log(Math.ceil(lastminute / (30 * pixelsperminute)));
+            for (var i = 0; i < Math.ceil(lastminute / 30); i++) {
+                g.fillText(printdate.getHours() + ":" + printdate.getMinutes(), leftx + i * 30 * pixelsperminute, bottomy + 15);
+                printdate.setTime(printdate.getTime() + 30 * 60000);
+            }
             
             //draw graph line
             g.strokeStyle = "#FFAF3C";
@@ -207,6 +259,8 @@ var drinkhistory = [
                 g.strokeStyle = '#FFAF3C';
                 g.stroke();
             }
+            
+            g.restore();
         },
         
         
