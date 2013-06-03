@@ -1,6 +1,5 @@
 var kippis = null;
 var dev = false;
-var startDate = new Date(2013,5,29,19,40,0,0);
 
 //populated history
 if (dev) {
@@ -37,7 +36,7 @@ if (dev) {
 
 (function() {
     /**
-     * App wide variables
+     * App wide variables. Init with debug values.
      * 
      * @object 
      */
@@ -51,9 +50,13 @@ if (dev) {
         femalefactor: 0.49,
         margin: 10,
         alcoholdensity: 0.789,
-        startDate: null
+        startDate: new Date(2013,5,29,19,40,0,0),
+        currentTime: new Date(2013,5,29,22,0,0,0)
     };
     
+    var burnrateperminute = 0.017 * (1/60) * 10;
+    var points;
+    var autoupdateintervalid = 0;
     var scrollleft = 0;
     
     /**
@@ -67,11 +70,14 @@ if (dev) {
             vars.graph = graphelem.getContext("2d");
             vars.cw = graphelem.getAttribute("width");
             vars.ch = graphelem.getAttribute("height");
+            public.handleResize();
             
             //crisp lines
             vars.graph.translate(0.5, 0.5);
             
+            points = calcpoints();
             public.initEvents();
+            public.startInterval();
         },
                 
         initEvents: function() {
@@ -122,6 +128,7 @@ if (dev) {
                 amount += 1;
                 vars.personweight = amount;
                 elem.html(amount + "kg");
+                points = calcpoints();
                 public.drawGraph();
             });
             $(".weight.slider").find(".btnless").on('click', function(event)  {
@@ -134,6 +141,7 @@ if (dev) {
                 }
                 vars.personweight = amount;
                 elem.html(amount + "kg");
+                points = calcpoints();
                 public.drawGraph();
             });
             
@@ -145,6 +153,7 @@ if (dev) {
                 } else {
                     vars.ismale = false;
                 }
+                points = calcpoints();
                 public.drawGraph();
             });
             
@@ -189,12 +198,14 @@ if (dev) {
                 public.drawGraph();
             });
             
+            var resizetimeout = 0;
             $(window).resize(function() {
-                var w = $("section.graph").width();
-                $("canvas").attr("width", w);
-                vars.cw = w;
-                public.drawGraph();
-            }).trigger('resize');
+                public.handleResize();
+                clearTimeout(resizetimeout);
+                resizetimeout = setTimeout(function() {
+                    public.drawGraph();
+                }, 200);
+            });
             
             $("button.add").on('click', function(event) {
                 var cl = parseInt($(".servingsize.slider .amount").html());
@@ -207,18 +218,29 @@ if (dev) {
                 
                 if (drinkhistory.length == 0) {
                     //startDate = new Date(n.time.getYear(), n.time.getMonth(), n.time.getDay(), n.time.getHours(), 0, 0, 0);
-                    startDate = new Date();
-                    startDate.setMinutes(0);
+                    vars.startDate = new Date();
+                    vars.startDate.setMinutes(0);
                 }
                 
                 drinkhistory.push(n);
+                points = calcpoints();
                 public.drawGraph();
             });
         },
                 
+        handleResize: function() {
+            var w = $("section.graph").width();
+            $("canvas").attr("width", w);
+            vars.cw = w;
+        },
+                
+        startInterval: function() {
+            autoupdateintervalid = setInterval(function() {
+                public.drawGraph();
+            }, 120000);
+        },
+                
         drawGraph: function() {
-            var points = alctable();
-            
             var g = vars.graph;
             g.clearRect(0,0,vars.cw,vars.ch);
             g.font = "9pt arial";
@@ -238,7 +260,7 @@ if (dev) {
             g.fillRect(leftx, bottomy + 25, barwidth, 10);
             g.fillStyle = "#FFAF3C";
             g.fillRect(leftx + 1 + (-1* scrollleft / lastminute) * vars.cw, bottomy + 26, 100, 8);
-
+  
             //horizontal lines
             g.lineWidth = 0.5;
             g.strokeStyle = "#AAAAAA";
@@ -267,7 +289,7 @@ if (dev) {
 
             //times
             g.textAlign = "center";
-            var printdate = new Date(startDate.getTime());
+            var printdate = new Date(vars.startDate.getTime());
             for (var i = 0; i < Math.ceil(lastminute / 30) / 2; i++) {
                 g.fillText(printdate.getHours() + ":" + pad(printdate.getMinutes()), leftx + i * 30 * pixelsperminute, bottomy + 15);
                 printdate.setTime(printdate.getTime() + 30 * 60000);
@@ -298,15 +320,34 @@ if (dev) {
                 g.stroke();
             }
             
+            //draw current alc
+            vars.currentTime = new Date();
+            var currentminutes = (vars.currentTime - vars.startDate.getTime()) / 1000 / 60;
+            var lastpoint = points[points.length-1];
+            var tolastdrink = currentminutes - lastpoint.time;
+            
+            //vertical line
+            g.beginPath();
+            g.strokeStyle = "#4dcdff";
+            g.lineWidth = 1;
+            g.moveTo(leftx + pixelsperminute * currentminutes, bottomy);
+            g.lineTo(leftx + pixelsperminute * currentminutes, 0);
+            g.stroke();
+            
+            
+            var currentpromilles = lastpoint.starty + lastpoint.promilles - burnrateperminute * tolastdrink;
+            g.fillStyle = "black";
+            g.textAlign = "left";
+            g.font = "40px arial";
+            g.fillText(parseInt(currentpromilles * 100)/100 + "‰", leftx + pixelsperminute * currentminutes + 10, bottomy - 20 - currentpromilles * pixelsperpromille);
+            
             g.restore();
         },
         
         
     };
     
-    function alctable() {
-        var burnrateperminute = 0.017 * (1/60) * 10;
-        
+    function calcpoints() {
         var waterinbody = vars.personweight;
         if (vars.ismale) {
             waterinbody *= vars.malefactor;
@@ -327,7 +368,7 @@ if (dev) {
         };
         
         //process points of interest
-        var startminutes = startDate.getTime() / 1000 / 60;
+        var startminutes = vars.startDate.getTime() / 1000 / 60;
         var poi = [];
         for (var i = 0; i < drinkhistory.length; i++) {
             var minutesfromstart = drinkhistory[i].time.getTime() / 1000 / 60 - startminutes;
@@ -382,6 +423,11 @@ if (dev) {
     
     function pad(n){return n<10 ? '0'+n : n}
     
+    function pointatquadraticcurve(t, point) {
+        var x = Math.sqrt(1-t) * point.startx + 2 * (1-t) * t * point.startx + Math.sqrt(t) * point.peakx; 
+        var y = Math.sqrt(1-t) * point.starty + 2 * (1-t) * t * point.peaky + Math.sqrt(t) * point.peaky; 
+        return { x: x, y: y };
+    }
     
     kippis = public;
 })();

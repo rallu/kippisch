@@ -18,6 +18,10 @@ html, body  {
 
 body {
     padding: 1%;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
 }
 
 header {
@@ -42,7 +46,7 @@ nav a {
 }
 
 section {
-    background-color: #F5EEE4;
+    background-color: #FFFAF2;
     margin-bottom: 20px;
     border-radius: 3px;
     padding: 10px;
@@ -162,6 +166,7 @@ button.add:hover {
 
 canvas {
     /*width: 100%;*/
+    -webkit-user-select: none;
 }
 
  @media only screen and (min-width: 640px){
