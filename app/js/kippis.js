@@ -151,20 +151,32 @@ if (dev) {
             var dragging = false;
             var lastx = 0;
             var lasty = 0;
-            $("canvas").on('mousedown', function(event) {
+            $("canvas").on('mousedown touchstart', function(event) {
                 dragging = true;
-                lastx = event.pageX;
-                lasty = event.pageY;
-            }).on('mouseup mouseout', function() {
+                
+                if (event.touches) {
+                    lastx = event.touches[0].pageX;
+                    lasty = event.touches[0].pageY;
+                } else {
+                    lastx = event.pageX;
+                    lasty = event.pageY;
+                }
+            }).on('mouseup mouseout touchend touchcancel', function() {
                 dragging = false;
             }).on('mousemove', function(event) {
                 if (!dragging)
                     return;
                 
-                event.preventDefault();
+                //event.preventDefault();
                 
-                var xmove = event.pageX - lastx;
-                var ymove = event.pageY - lasty;
+                var xmove,ymove;
+                if (event.touches) {
+                    xmove = event.touches[0].pageX - lastx;
+                    ymove = event.touches[0].pageY - lasty;
+                } else {
+                    xmove = event.pageX - lastx;
+                    ymove = event.pageY - lasty;
+                }
                 
                 scrollleft += xmove;
                 if (scrollleft > 0) {
