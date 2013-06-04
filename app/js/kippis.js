@@ -157,45 +157,20 @@ if (dev) {
                 public.drawGraph();
             });
             
-            var dragging = false;
             var lastx = 0;
-            var lasty = 0;
-            $("canvas").on('mousedown touchstart', function(event) {
-                dragging = true;
-                
-                if (event.touches) {
-                    lastx = event.touches[0].pageX;
-                    lasty = event.touches[0].pageY;
-                } else {
-                    lastx = event.pageX;
-                    lasty = event.pageY;
-                }
-            }).on('mouseup mouseout touchend touchcancel', function() {
-                dragging = false;
-            }).on('mousemove', function(event) {
-                if (!dragging)
-                    return;
-                
-                //event.preventDefault();
-                
-                var xmove,ymove;
-                if (event.touches) {
-                    xmove = event.touches[0].pageX - lastx;
-                    ymove = event.touches[0].pageY - lasty;
-                } else {
-                    xmove = event.pageX - lastx;
-                    ymove = event.pageY - lasty;
-                }
-                
+
+            $("canvas").hammer().on('drag', function(event) {
+                var xmove = event.gesture.touches[0].pageX - lastx;
+                lastx = event.gesture.touches[0].pageX;
                 scrollleft += xmove;
                 if (scrollleft > 0) {
                     scrollleft = 0;
                 }
-                
-                lastx = event.pageX;
-                lasty = event.pageY;
-                
                 public.drawGraph();
+            }).on('dragend', function() {
+                lastx = 0;
+            }).on('dragstart', function(event) {
+                lastx = event.gesture.touches[0].pageX;
             });
             
             var resizetimeout = 0;
