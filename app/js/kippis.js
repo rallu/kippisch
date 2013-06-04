@@ -35,6 +35,7 @@ if (dev) {
 }
 
 (function() {
+    "use strict";
     /**
      * App wide variables. Init with debug values.
      * 
@@ -51,7 +52,10 @@ if (dev) {
         margin: 10,
         alcoholdensity: 0.789,
         startDate: new Date(2013,5,29,19,40,0,0),
-        currentTime: new Date(2013,5,29,22,0,0,0)
+        currentTime: new Date(2013,5,29,22,0,0,0),
+        pixelsperminute: 4,
+        pixelsperpromille: 0,
+        leftx: 40
     };
     
     var burnrateperminute = 0.017 * (1/60) * 10;
@@ -64,20 +68,21 @@ if (dev) {
      * 
      * @type type
      */
-    var public = {
+    var methods = {
         init: function() {
             var graphelem = document.getElementById("graph");
             vars.graph = graphelem.getContext("2d");
             vars.cw = graphelem.getAttribute("width");
             vars.ch = graphelem.getAttribute("height");
-            public.handleResize();
+            vars.pixelsperpromille = calcpixelsperpromille();
+            methods.handleResize();
             
             //crisp lines
             vars.graph.translate(0.5, 0.5);
             
             points = calcpoints();
-            public.initEvents();
-            public.startInterval();
+            methods.initEvents();
+            methods.startInterval();
         },
                 
         initEvents: function() {
@@ -129,7 +134,7 @@ if (dev) {
                 vars.personweight = amount;
                 elem.html(amount + "kg");
                 points = calcpoints();
-                public.drawGraph();
+                methods.drawGraph();
             });
             $(".weight.slider").find(".btnless").on('click', function(event)  {
                 event.preventDefault();
@@ -142,7 +147,7 @@ if (dev) {
                 vars.personweight = amount;
                 elem.html(amount + "kg");
                 points = calcpoints();
-                public.drawGraph();
+                methods.drawGraph();
             });
             
             $(".gender span").on('click', function(event) {
@@ -154,19 +159,29 @@ if (dev) {
                     vars.ismale = false;
                 }
                 points = calcpoints();
-                public.drawGraph();
+                methods.drawGraph();
             });
             
             var lastx = 0;
 
             $("canvas").hammer().on('drag', function(event) {
+                if (points.length === 0)
+                    return;
+                
                 var xmove = event.gesture.touches[0].pageX - lastx;
                 lastx = event.gesture.touches[0].pageX;
                 scrollleft += xmove;
                 if (scrollleft > 0) {
                     scrollleft = 0;
                 }
-                public.drawGraph();
+                
+                //TODO: bar doesn't align properly to end
+                var rightend = (points[points.length-1].endx + vars.cw / vars.pixelsperminute + vars.leftx) * -1;
+                if (scrollleft < rightend) {
+                    scrollleft = rightend;
+                }
+                
+                methods.drawGraph();
             }).on('dragend', function() {
                 lastx = 0;
             }).on('dragstart', function(event) {
@@ -175,10 +190,10 @@ if (dev) {
             
             var resizetimeout = 0;
             $(window).resize(function() {
-                public.handleResize();
+                methods.handleResize();
                 clearTimeout(resizetimeout);
                 resizetimeout = setTimeout(function() {
-                    public.drawGraph();
+                    methods.drawGraph();
                 }, 200);
             });
             
@@ -192,14 +207,13 @@ if (dev) {
                 };
                 
                 if (drinkhistory.length == 0) {
-                    //startDate = new Date(n.time.getYear(), n.time.getMonth(), n.time.getDay(), n.time.getHours(), 0, 0, 0);
                     vars.startDate = new Date();
                     vars.startDate.setMinutes(0);
                 }
                 
                 drinkhistory.push(n);
                 points = calcpoints();
-                public.drawGraph();
+                methods.drawGraph();
             });
         },
                 
@@ -211,7 +225,7 @@ if (dev) {
                 
         startInterval: function() {
             autoupdateintervalid = setInterval(function() {
-                public.drawGraph();
+                methods.drawGraph();
             }, 120000);
         },
                 
@@ -221,20 +235,17 @@ if (dev) {
             g.font = "9pt arial";
             
             var bottomy = vars.ch - vars.margin - 30;
-            var leftx = 40;
-            var pixelsperminute = 4;
-            var pixelsperpromille = (vars.ch - 30 - vars.margin * 2) / 3;
-            
+
             if (points.length > 0) {
-                var lastminute = points[points.length-1].endx * pixelsperminute + leftx;
+                var lastminute = points[points.length-1].endx * vars.pixelsperminute + vars.leftx;
             }
 
             //scrollbar
-            var barwidth = vars.cw - leftx - 10;
+            var barwidth = vars.cw - vars.leftx - 10;
             g.fillStyle = "#DDDDDD";
-            g.fillRect(leftx, bottomy + 25, barwidth, 10);
+            g.fillRect(vars.leftx, bottomy + 25, barwidth, 10);
             g.fillStyle = "#FFAF3C";
-            g.fillRect(leftx + 1 + (-1* scrollleft / lastminute) * vars.cw, bottomy + 26, 100, 8);
+            g.fillRect(vars.leftx + 1 + (-1 * scrollleft / lastminute) * vars.cw, bottomy + 26, 100, 8);
   
             //horizontal lines
             g.lineWidth = 0.5;
@@ -243,14 +254,14 @@ if (dev) {
             g.textAlign = "right";
             for (var i = 0; i < 3.5; i += 0.5) {
                 g.beginPath();
-                g.moveTo(leftx, bottomy - pixelsperpromille * i);
-                g.lineTo(vars.cw, bottomy - pixelsperpromille * i);
+                g.moveTo(vars.leftx, bottomy - vars.pixelsperpromille * i);
+                g.lineTo(vars.cw, bottomy - vars.pixelsperpromille * i);
                 g.stroke();
-                g.fillText(i, leftx - 5, bottomy - pixelsperpromille * i);
+                g.fillText(i, vars.leftx - 5, bottomy - vars.pixelsperpromille * i);
             }
             g.beginPath();
-            g.moveTo(leftx, bottomy);
-            g.lineTo(leftx, 0);
+            g.moveTo(vars.leftx, bottomy);
+            g.lineTo(vars.leftx, 0);
             g.stroke();
 
             if (points.length === 0) {
@@ -258,7 +269,7 @@ if (dev) {
             }
 
             g.save();
-            g.rect(leftx, 0, vars.cw, vars.ch);
+            g.rect(vars.leftx, 0, vars.cw, vars.ch);
             g.clip();
             g.translate(scrollleft, 0);
 
@@ -266,7 +277,7 @@ if (dev) {
             g.textAlign = "center";
             var printdate = new Date(vars.startDate.getTime());
             for (var i = 0; i < Math.ceil(lastminute / 30) / 2; i++) {
-                g.fillText(printdate.getHours() + ":" + pad(printdate.getMinutes()), leftx + i * 30 * pixelsperminute, bottomy + 15);
+                g.fillText(printdate.getHours() + ":" + pad(printdate.getMinutes()), vars.leftx + i * 30 * vars.pixelsperminute, bottomy + 15);
                 printdate.setTime(printdate.getTime() + 30 * 60000);
             }
             
@@ -274,12 +285,12 @@ if (dev) {
             g.strokeStyle = "#FFAF3C";
             g.lineWidth = 2;
             g.beginPath();
-            g.moveTo(leftx,bottomy);
-            g.lineTo(leftx + pixelsperminute * points[0].startx, bottomy);
+            g.moveTo(vars.leftx,bottomy);
+            g.lineTo(vars.leftx + vars.pixelsperminute * points[0].startx, bottomy);
             for (var i = 0; i < points.length; i++) {
-                g.quadraticCurveTo(leftx + pixelsperminute * points[i].startx, bottomy - points[i].peaky * pixelsperpromille, leftx + pixelsperminute * points[i].peakx, bottomy - points[i].peaky * pixelsperpromille);
+                g.quadraticCurveTo(vars.leftx + vars.pixelsperminute * points[i].startx, bottomy - points[i].peaky * vars.pixelsperpromille, vars.leftx + vars.pixelsperminute * points[i].peakx, bottomy - points[i].peaky * vars.pixelsperpromille);
                 if (points[i].endx > points[i].peakx) {
-                    g.lineTo(leftx + pixelsperminute * points[i].endx, bottomy - points[i].endy * pixelsperpromille);
+                    g.lineTo(vars.leftx + vars.pixelsperminute * points[i].endx, bottomy - points[i].endy * vars.pixelsperpromille);
                 }
             }
             g.stroke();
@@ -287,7 +298,7 @@ if (dev) {
             //Draw dots on line
             for (var i = 0; i < points.length; i++) {
                 g.beginPath();
-                g.arc(leftx + points[i].startx * pixelsperminute, bottomy - points[i].starty * pixelsperpromille, 4, 0, 2 * Math.PI, false);
+                g.arc(vars.leftx + points[i].startx * vars.pixelsperminute, bottomy - points[i].starty * vars.pixelsperpromille, 4, 0, 2 * Math.PI, false);
                 g.fillStyle = 'white';
                 g.fill();
                 g.lineWidth = 2;
@@ -305,8 +316,8 @@ if (dev) {
             g.beginPath();
             g.strokeStyle = "#4dcdff";
             g.lineWidth = 1;
-            g.moveTo(leftx + pixelsperminute * currentminutes, bottomy);
-            g.lineTo(leftx + pixelsperminute * currentminutes, 0);
+            g.moveTo(vars.leftx + vars.pixelsperminute * currentminutes, bottomy);
+            g.lineTo(vars.leftx + vars.pixelsperminute * currentminutes, 0);
             g.stroke();
             
             
@@ -314,13 +325,15 @@ if (dev) {
             g.fillStyle = "black";
             g.textAlign = "left";
             g.font = "40px arial";
-            g.fillText(parseInt(currentpromilles * 100)/100 + "‰", leftx + pixelsperminute * currentminutes + 10, bottomy - 20 - currentpromilles * pixelsperpromille);
+            g.fillText(parseInt(currentpromilles * 100)/100 + "‰", vars.leftx + vars.pixelsperminute * currentminutes + 10, bottomy - 20 - currentpromilles * vars.pixelsperpromille);
             
             g.restore();
-        },
-        
-        
+        }
     };
+    
+    function calcpixelsperpromille() {
+        return (vars.ch - 30 - vars.margin * 2) / 3;
+    }
     
     function calcpoints() {
         var waterinbody = vars.personweight;
@@ -404,7 +417,7 @@ if (dev) {
         return { x: x, y: y };
     }
     
-    kippis = public;
+    kippis = methods;
 })();
 
 $(document).ready(function() {

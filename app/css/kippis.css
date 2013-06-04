@@ -150,10 +150,10 @@ button.add:hover {
 .gender span {
     margin: 5px;
     display: inline-block;
-    height: 100px;
-    width: 100px;
+    height: 80px;
+    width: 80px;
     font-size: 40px;
-    line-height: 100px;
+    line-height: 80px;
     font-weight: bold;
     background-color: #E4F4FF;
     border-radius: 5px;
