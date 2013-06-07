@@ -15,12 +15,6 @@
         <header>
             Kipp.is
         </header>
-        <!--
-        <nav>
-            <a href="#graphsection">Graph</a>
-            <a href="#settingssection">Settings</a>
-        </nav>
-        -->
         <section class="drink">
             <!--
             <div class="drinktypesoutercontainer">
@@ -47,10 +41,21 @@
             </div>
             <button class="add">Drink!</button>
         </section>
-        <section id="graphsection" class="graph">
+        <section class="settings desktop">
+            <div class="weight slider clearfix">
+                <div class="btnless">◀</div>
+                <div class="amount">88kg</div>
+                <div class="btnmore">▶</div>
+            </div>
+            <div class="gender">
+                <span class="male selected">&#9794;</span>
+                <span class="female">&#9792;</span>
+            </div>
+        </section>
+        <section class="graph">
             <canvas id="graph" width="800" height="600"></canvas>
         </section>
-        <section id="settingssection" class="settings">
+        <section class="settings mobile">
             <div class="weight slider clearfix">
                 <div class="btnless">◀</div>
                 <div class="amount">88kg</div>

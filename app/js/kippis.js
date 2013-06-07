@@ -45,7 +45,7 @@ if (dev) {
         graph: null,
         ch: 300,
         cw: 400,
-        personweight: 88,
+        personweight: 70,
         ismale: true,
         malefactor: 0.58,
         femalefactor: 0.49,
@@ -80,6 +80,7 @@ if (dev) {
             //crisp lines
             vars.graph.translate(0.5, 0.5);
             
+            methods.initData();
             points = calcpoints();
             methods.initEvents();
             methods.startInterval();
@@ -215,6 +216,10 @@ if (dev) {
                 points = calcpoints();
                 methods.drawGraph();
             });
+        },
+                
+        initData: function() {
+            $(".weight .amount").html(vars.personweight + "kg");
         },
                 
         handleResize: function() {

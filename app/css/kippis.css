@@ -169,24 +169,40 @@ canvas {
     -webkit-user-select: none;
 }
 
+.desktop {
+    display: none;
+}
+
  @media only screen and (min-width: 640px){
+     body {
+         padding: 10px;
+     }
+     
+     .desktop {
+         display: block;
+     }
+     
+     .mobile {
+         display: none;
+     }
+     
      header {
          text-align: left;
          font-size: 72px;
      }
      
      section.graph {
-         float: right;
-         width: 73%;
+         margin-left: 230px;
      }
      
      section.drink {
-         width: 20%;
+         width: 200px;
          float: left;
      }
      
      section.settings {
-         width: 20%;
+         width: 200px;
          float: left;
+         clear: left;
      }
  }
