@@ -136,6 +136,10 @@ if (dev) {
                 elem.html(amount + "kg");
                 points = calcpoints();
                 methods.drawGraph();
+                
+                if (localStorage) {
+                    localStorage.setItem("weight", amount);
+                }
             });
             $(".weight.slider").find(".btnless").on('click', function(event)  {
                 event.preventDefault();
@@ -149,16 +153,28 @@ if (dev) {
                 elem.html(amount + "kg");
                 points = calcpoints();
                 methods.drawGraph();
+                
+                if (localStorage) {
+                    localStorage.setItem("weight", amount);
+                }
             });
             
             $(".gender span").on('click', function(event) {
                 $(this).parent().find("span").removeClass("selected");
                 $(this).addClass("selected");
+                var selected = "";
                 if ($(this).hasClass("male")) {
                     vars.ismale = true;
+                    selected = "male";
                 } else {
                     vars.ismale = false;
+                    selected = "female";
                 }
+                
+                if (localStorage) {
+                    localStorage.setItem("sex", selected);
+                }
+                
                 points = calcpoints();
                 methods.drawGraph();
             });
@@ -220,6 +236,27 @@ if (dev) {
                 
         initData: function() {
             $(".weight .amount").html(vars.personweight + "kg");
+            
+            if (!localStorage) {
+                return;
+            }
+            
+            var weight = localStorage.getItem("weight");
+            var sex = localStorage.getItem("sex");
+            
+            if (weight !== null) {
+                $(".weight .amount").html(weight + "kg");
+                vars.personweight = weight;
+            }
+            if (sex !== null) {
+                $(".gender span").removeClass("selected");
+                $(".gender ." + sex).addClass("selected");
+                if (sex === "male") {
+                    vars.ismale = true;
+                }
+            }
+            
+            
         },
                 
         handleResize: function() {
@@ -330,7 +367,11 @@ if (dev) {
             g.fillStyle = "black";
             g.textAlign = "left";
             g.font = "40px arial";
-            g.fillText(parseInt(currentpromilles * 100)/100 + "‰", vars.leftx + vars.pixelsperminute * currentminutes + 10, bottomy - 20 - currentpromilles * vars.pixelsperpromille);
+            var promilles = parseInt(currentpromilles * 100)/100;
+            if (promilles < 0) {
+                promilles = "0.00";
+            }
+            g.fillText(promilles + "‰", vars.leftx + vars.pixelsperminute * currentminutes + 10, bottomy - 20 - currentpromilles * vars.pixelsperpromille);
             
             g.restore();
         }
