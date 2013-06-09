@@ -107,13 +107,28 @@ if (dev) {
                 elem.html(amount + "%");
             });
             
+            var lastx = 0;
+            $(".alcoholcontent.slider .amount").hammer().on('dragstart', function(event) {
+                lastx = event.gesture.center.pageX;
+            }).on('drag', function(event) {
+                //console.log(event);
+                var moved = parseInt(event.gesture.center.pageX - lastx);
+                lastx = event.gesture.center.pageX;
+                var newamount = parseInt(parseFloat($(this).html()) * 10 + moved) / 10;
+                if (newamount < 0) {
+                    newamount = 0;
+                } else if (newamount > 100) {
+                    newamount = 100;
+                }
+                $(this).html(newamount + "%");
+            });
+            
+            //size of servings events
             $(".servingsize.slider").find(".btnmore").on('click', function(event)  {
                 event.preventDefault();
                 var elem = $(this).parent().find('.amount');
                 var amount = parseFloat(elem.html());
                 amount += 1;
-                if (amount > 100)
-                    amount = 100;
                 elem.html(amount + "cl");
             });
             $(".servingsize.slider").find(".btnless").on('click', function(event)  {
@@ -125,6 +140,19 @@ if (dev) {
                     amount = 0;
                 }
                 elem.html(amount + "cl");
+            });
+            
+            $(".servingsize.slider .amount").hammer().on('dragstart', function(event) {
+                lastx = event.gesture.center.pageX;
+            }).on('drag', function(event) {
+                //console.log(event);
+                var moved = parseInt(event.gesture.center.pageX - lastx);
+                lastx = event.gesture.center.pageX;
+                var newamount = parseInt(parseInt($(this).html()) + moved);
+                if (newamount < 0) {
+                    newamount = 0;
+                }
+                $(this).html(newamount + "cl");
             });
             
             $(".weight.slider").find(".btnmore").on('click', function(event)  {
@@ -153,6 +181,23 @@ if (dev) {
                 elem.html(amount + "kg");
                 points = calcpoints();
                 methods.drawGraph();
+                
+                if (localStorage) {
+                    localStorage.setItem("weight", amount);
+                }
+            });
+            
+            $(".weight.slider .amount").hammer().on('dragstart', function(event) {
+                lastx = event.gesture.center.pageX;
+            }).on('drag', function(event) {
+                //console.log(event);
+                var moved = parseInt(event.gesture.center.pageX - lastx);
+                lastx = event.gesture.center.pageX;
+                var newamount = parseInt(parseInt($(this).html()) + moved);
+                if (newamount < 30) {
+                    newamount = 30;
+                }
+                $(this).html(newamount + "kg");
                 
                 if (localStorage) {
                     localStorage.setItem("weight", amount);
@@ -294,13 +339,13 @@ if (dev) {
             g.strokeStyle = "#AAAAAA";
             g.fillStyle = "#555555";
             g.textAlign = "right";
+            g.beginPath();
             for (var i = 0; i < 3.5; i += 0.5) {
-                g.beginPath();
                 g.moveTo(vars.leftx, bottomy - vars.pixelsperpromille * i);
                 g.lineTo(vars.cw, bottomy - vars.pixelsperpromille * i);
-                g.stroke();
                 g.fillText(i, vars.leftx - 5, bottomy - vars.pixelsperpromille * i);
             }
+            g.stroke();
             g.beginPath();
             g.moveTo(vars.leftx, bottomy);
             g.lineTo(vars.leftx, 0);
@@ -309,7 +354,7 @@ if (dev) {
             if (points.length === 0) {
                 return;
             }
-
+            
             g.save();
             g.rect(vars.leftx, 0, vars.cw, vars.ch);
             g.clip();
@@ -400,7 +445,7 @@ if (dev) {
             //human body has 80.6% of water in body
             return ((0.806 * stantarddrinks) / waterinbody) * 10;
         };
-        
+
         //process points of interest
         var startminutes = vars.startDate.getTime() / 1000 / 60;
         var poi = [];
