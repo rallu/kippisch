@@ -112,6 +112,7 @@ section.drink {
 
 .slider div.amount {
     width: 70%;
+    cursor: ew-resize;
 }
 
 .slider div.btnless, .slider div.btnmore {

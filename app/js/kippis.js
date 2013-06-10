@@ -1,6 +1,14 @@
 var kippis = null;
 var dev = false;
 
+if (!localStorage) {
+    localStorage = {
+        dummy: true,
+        setItem: function() {},
+        getItem: function() {}
+    }
+}
+
 //populated history
 if (dev) {
     var drinkhistory = [
@@ -46,6 +54,8 @@ if (dev) {
         ch: 300,
         cw: 400,
         personweight: 70,
+        drinkvolume: 33,
+        drinkpercent: 5,
         ismale: true,
         malefactor: 0.58,
         femalefactor: 0.49,
@@ -89,119 +99,105 @@ if (dev) {
         initEvents: function() {
             $(".alcoholcontent.slider").find(".btnmore").on('click', function(event)  {
                 event.preventDefault();
-                var elem = $(this).parent().find('.amount');
-                var amount = parseFloat(elem.html());
-                amount += 0.5;
-                if (amount > 100)
-                    amount = 100;
-                elem.html(amount + "%");
+                vars.drinkpercent += 0.5;
+                if (vars.drinkpercent > 100) {
+                    vars.drinkpercent = 100;
+                }
+                
+                $(this).parent().find('.amount').html(roundfloat(vars.drinkpercent, 1) + "%");
             });
             $(".alcoholcontent.slider").find(".btnless").on('click', function(event)  {
                 event.preventDefault();
-                var elem = $(this).parent().find('.amount');
-                var amount = parseFloat(elem.html());
-                amount -= 0.5;
-                if (amount < 0) {
-                    amount = 0;
+                vars.drinkpercent -= 0.5;
+                if (vars.drinkpercent < 0) {
+                    vars.drinkpercent = 0;
                 }
-                elem.html(amount + "%");
+                
+                $(this).parent().find('.amount').html(roundfloat(vars.drinkpercent, 1) + "%");
             });
             
             var lastx = 0;
             $(".alcoholcontent.slider .amount").hammer().on('dragstart', function(event) {
                 lastx = event.gesture.center.pageX;
             }).on('drag', function(event) {
-                //console.log(event);
                 var moved = parseInt(event.gesture.center.pageX - lastx);
                 lastx = event.gesture.center.pageX;
-                var newamount = parseInt(parseFloat($(this).html()) * 10 + moved) / 10;
-                if (newamount < 0) {
-                    newamount = 0;
-                } else if (newamount > 100) {
-                    newamount = 100;
+                
+                vars.drinkpercent += (moved / 40);
+                if (vars.drinkpercent < 0) {
+                    vars.drinkpercent = 0;
+                } else if (vars.drinkpercent > 100) {
+                    vars.drinkpercent = 100;
                 }
-                $(this).html(newamount + "%");
+                
+                $(this).html(roundfloat(vars.drinkpercent, 1) + "%");
             });
             
             //size of servings events
             $(".servingsize.slider").find(".btnmore").on('click', function(event)  {
                 event.preventDefault();
-                var elem = $(this).parent().find('.amount');
-                var amount = parseFloat(elem.html());
-                amount += 1;
-                elem.html(amount + "cl");
+                vars.drinkvolume += 1;
+                $(this).parent().find('.amount').html(roundfloat(vars.drinkvolume, 0) + "cl");
             });
             $(".servingsize.slider").find(".btnless").on('click', function(event)  {
                 event.preventDefault();
-                var elem = $(this).parent().find('.amount');
-                var amount = parseFloat(elem.html());
-                amount -= 1;
-                if (amount < 0) {
-                    amount = 0;
+                vars.drinkvolume -= 1;
+                if (vars.drinkvolume < 1) {
+                    vars.drinkvolume = 1;
                 }
-                elem.html(amount + "cl");
+                $(this).parent().find('.amount').html(roundfloat(vars.drinkvolume, 0) + "cl");
             });
             
             $(".servingsize.slider .amount").hammer().on('dragstart', function(event) {
                 lastx = event.gesture.center.pageX;
             }).on('drag', function(event) {
-                //console.log(event);
                 var moved = parseInt(event.gesture.center.pageX - lastx);
                 lastx = event.gesture.center.pageX;
-                var newamount = parseInt(parseInt($(this).html()) + moved);
-                if (newamount < 0) {
-                    newamount = 0;
+                
+                vars.drinkvolume += moved / 4;
+                if (vars.drinkvolume < 1) {
+                    vars.drinkvolume = 1;
                 }
-                $(this).html(newamount + "cl");
+                $(this).parent().find('.amount').html(roundfloat(vars.drinkvolume, 0) + "cl");
             });
             
             $(".weight.slider").find(".btnmore").on('click', function(event)  {
                 event.preventDefault();
-                var elem = $(this).parent().find('.amount');
-                var amount = parseInt(elem.html());
-                amount += 1;
-                vars.personweight = amount;
-                elem.html(amount + "kg");
+                vars.personweight += 1;
+                console.log(vars.personweight);
+                $(this).parent().find('.amount').html(roundfloat(vars.personweight, 0) + "kg")
                 points = calcpoints();
                 methods.drawGraph();
                 
-                if (localStorage) {
-                    localStorage.setItem("weight", amount);
-                }
+                localStorage.setItem("weight", roundfloat(vars.personweight, 0));
             });
             $(".weight.slider").find(".btnless").on('click', function(event)  {
                 event.preventDefault();
-                var elem = $(this).parent().find('.amount');
-                var amount = parseInt(elem.html());
-                amount -= 1;
-                if (amount < 30) {
-                    amount = 30;
+                vars.personweight -= 1;
+                if (vars.personweight < 30) {
+                    vars.personweight = 30;
                 }
-                vars.personweight = amount;
-                elem.html(amount + "kg");
+                $(this).parent().find('.amount').html(roundfloat(vars.personweight, 0) + "kg")
                 points = calcpoints();
                 methods.drawGraph();
                 
-                if (localStorage) {
-                    localStorage.setItem("weight", amount);
-                }
+                localStorage.setItem("weight", roundfloat(vars.personweight, 0));
             });
             
             $(".weight.slider .amount").hammer().on('dragstart', function(event) {
                 lastx = event.gesture.center.pageX;
             }).on('drag', function(event) {
-                //console.log(event);
                 var moved = parseInt(event.gesture.center.pageX - lastx);
                 lastx = event.gesture.center.pageX;
-                var newamount = parseInt(parseInt($(this).html()) + moved);
-                if (newamount < 30) {
-                    newamount = 30;
+                vars.personweight += moved / 4;
+                if (vars.personweight < 30) {
+                    vars.personweight = 30;
                 }
-                $(this).html(newamount + "kg");
+                $(this).parent().find('.amount').html(roundfloat(vars.personweight, 0) + "kg")
+                points = calcpoints();
+                methods.drawGraph();
                 
-                if (localStorage) {
-                    localStorage.setItem("weight", amount);
-                }
+                localStorage.setItem("weight", roundfloat(vars.personweight, 0));
             });
             
             $(".gender span").on('click', function(event) {
@@ -216,9 +212,7 @@ if (dev) {
                     selected = "female";
                 }
                 
-                if (localStorage) {
-                    localStorage.setItem("sex", selected);
-                }
+                localStorage.setItem("sex", selected);
                 
                 points = calcpoints();
                 methods.drawGraph();
@@ -260,8 +254,8 @@ if (dev) {
             });
             
             $("button.add").on('click', function(event) {
-                var cl = parseInt($(".servingsize.slider .amount").html());
-                var percent = parseFloat($(".alcoholcontent.slider .amount").html());
+                var cl = roundfloat(vars.drinkvolume, 0);
+                var percent = roundfloat(vars.drinkpercent, 1);
                 var n = {
                     time: new Date(),
                     percent: percent,
@@ -282,7 +276,7 @@ if (dev) {
         initData: function() {
             $(".weight .amount").html(vars.personweight + "kg");
             
-            if (!localStorage) {
+            if (localStorage.dummy) {
                 return;
             }
             
@@ -291,7 +285,7 @@ if (dev) {
             
             if (weight !== null) {
                 $(".weight .amount").html(weight + "kg");
-                vars.personweight = weight;
+                vars.personweight = parseInt(weight);
             }
             if (sex !== null) {
                 $(".gender span").removeClass("selected");
@@ -506,6 +500,19 @@ if (dev) {
         var x = Math.sqrt(1-t) * point.startx + 2 * (1-t) * t * point.startx + Math.sqrt(t) * point.peakx; 
         var y = Math.sqrt(1-t) * point.starty + 2 * (1-t) * t * point.peaky + Math.sqrt(t) * point.peaky; 
         return { x: x, y: y };
+    }
+    
+    /**
+     * 
+     * @param {type} i number
+     * @param {type} n decimals
+     * @returns {Number|@exp;@call;parseInt}
+     */
+    function roundfloat(i, n) {
+        if (n == 0) {
+            return parseInt(i);
+        }
+        return parseInt(i * (10 * n)) / (10 * n);
     }
     
     kippis = methods;
