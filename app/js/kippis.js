@@ -72,6 +72,7 @@ if (dev) {
     var points;
     var autoupdateintervalid = 0;
     var scrollleft = 0;
+    var rightend = 0;
     
     /**
      * Public methods to use in kippis variable.
@@ -167,8 +168,8 @@ if (dev) {
                 console.log(vars.personweight);
                 $(this).parent().find('.amount').html(roundfloat(vars.personweight, 0) + "kg")
                 points = calcpoints();
-                methods.drawGraph();
                 
+                window.requestAnimationFrame(methods.drawGraph);
                 localStorage.setItem("weight", roundfloat(vars.personweight, 0));
             });
             $(".weight.slider").find(".btnless").on('click', function(event)  {
@@ -179,8 +180,8 @@ if (dev) {
                 }
                 $(this).parent().find('.amount').html(roundfloat(vars.personweight, 0) + "kg")
                 points = calcpoints();
-                methods.drawGraph();
                 
+                window.requestAnimationFrame(methods.drawGraph);
                 localStorage.setItem("weight", roundfloat(vars.personweight, 0));
             });
             
@@ -195,7 +196,7 @@ if (dev) {
                 }
                 $(this).parent().find('.amount').html(roundfloat(vars.personweight, 0) + "kg")
                 points = calcpoints();
-                methods.drawGraph();
+                window.requestAnimationFrame(methods.drawGraph);
                 
                 localStorage.setItem("weight", roundfloat(vars.personweight, 0));
             });
@@ -227,17 +228,17 @@ if (dev) {
                 var xmove = event.gesture.touches[0].pageX - lastx;
                 lastx = event.gesture.touches[0].pageX;
                 scrollleft += xmove;
-                if (scrollleft > 0) {
-                    scrollleft = 0;
-                }
                 
-                //TODO: bar doesn't align properly to end
-                var rightend = (points[points.length-1].endx + vars.cw / vars.pixelsperminute + vars.leftx) * -1;
+                
                 if (scrollleft < rightend) {
                     scrollleft = rightend;
                 }
                 
-                methods.drawGraph();
+                if (scrollleft > 0) {
+                    scrollleft = 0;
+                }
+                
+                window.requestAnimationFrame(methods.drawGraph);
             }).on('dragend', function() {
                 lastx = 0;
             }).on('dragstart', function(event) {
@@ -326,8 +327,8 @@ if (dev) {
             g.fillStyle = "#DDDDDD";
             g.fillRect(vars.leftx, bottomy + 25, barwidth, 10);
             g.fillStyle = "#FFAF3C";
-            g.fillRect(vars.leftx + 1 + (-1 * scrollleft / lastminute) * vars.cw, bottomy + 26, 100, 8);
-  
+            g.fillRect(vars.leftx + 1 +  scrollleft / rightend * (vars.cw - 114 - vars.leftx), bottomy + 26, 100, 8);
+            
             //horizontal lines
             g.lineWidth = 0.5;
             g.strokeStyle = "#AAAAAA";
@@ -491,6 +492,11 @@ if (dev) {
             alcinlastpoint = current.endy;
         }
         
+        //calc right end of scrollbar
+        if (poi.length > 0) {
+            rightend = (poi[poi.length-1].endx + vars.leftx) * vars.pixelsperminute * -1 + vars.cw;
+        }
+            
         return poi;
     }
     
@@ -514,7 +520,7 @@ if (dev) {
         }
         return parseInt(i * (10 * n)) / (10 * n);
     }
-    
+        
     kippis = methods;
 })();
 
@@ -523,3 +529,27 @@ $(document).ready(function() {
     kippis.drawGraph();
 });
 
+(function() {
+    var lastTime = 0;
+    var vendors = ['webkit', 'moz'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame =
+          window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
