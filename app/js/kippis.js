@@ -9,39 +9,6 @@ if (!localStorage) {
     }
 }
 
-//populated history
-if (dev) {
-    var drinkhistory = [
-        {
-            time: new Date(2013, 5, 29, 20, 0, 0, 0),
-            percent: 5.4,
-            amount: 33
-        },
-        {
-            time: new Date(2013, 5, 29, 20, 15, 0, 0),
-            percent: 4.7,
-            amount: 33
-        },
-        {
-            time: new Date(2013, 5, 29, 20, 35, 0, 0),
-            percent: 4.7,
-            amount: 50
-        },
-        {
-            time: new Date(2013, 5, 29, 21, 30, 0, 0),
-            percent: 40,
-            amount: 4
-        },
-        {
-            time: new Date(2013, 5, 29, 21, 35, 0, 0),
-            percent: 4.7,
-            amount: 33
-        }
-    ];
-} else {
-    drinkhistory = [];
-}
-
 (function() {
     "use strict";
     /**
@@ -61,8 +28,8 @@ if (dev) {
         femalefactor: 0.49,
         margin: 10,
         alcoholdensity: 0.789,
-        startDate: new Date(2013,5,29,19,40,0,0),
-        currentTime: new Date(2013,5,29,22,0,0,0),
+        startDate: new Date(),
+        currentTime: new Date(),
         pixelsperminute: 4,
         pixelsperpromille: 0,
         leftx: 40
@@ -73,6 +40,8 @@ if (dev) {
     var autoupdateintervalid = 0;
     var scrollleft = 0;
     var rightend = 0;
+    var drinkhistory = [];
+    var olddrinkhistory = [];
     
     /**
      * Public methods to use in kippis variable.
@@ -95,6 +64,10 @@ if (dev) {
             points = calcpoints();
             methods.initEvents();
             methods.startInterval();
+            
+            if (dev) {
+                methods.initDev();
+            }
         },
                 
         initEvents: function() {
@@ -269,6 +242,7 @@ if (dev) {
                 }
                 
                 drinkhistory.push(n);
+                localStorage.setItem("drinkhistory", JSON.stringify(drinkhistory));
                 points = calcpoints();
                 methods.drawGraph();
             });
@@ -276,6 +250,8 @@ if (dev) {
                 
         initData: function() {
             $(".weight .amount").html(vars.personweight + "kg");
+            vars.startDate = new Date();
+            vars.startDate.setMinutes(0);
             
             if (localStorage.dummy) {
                 return;
@@ -296,7 +272,35 @@ if (dev) {
                 }
             }
             
-            
+            /**
+             * Handling past history
+             */
+            try {
+                var lsDrinkHistory = JSON.parse(localStorage.getItem("drinkhistory"));
+                if (lsDrinkHistory && lsDrinkHistory.length > 0) {
+                    var lastobject = lsDrinkHistory[lsDrinkHistory.length - 1];
+                    //if it has been more than 8 hours from last drink
+                    if (new Date().getTime() - new Date(lastobject.time).getTime() > 8 * 60 * 60 * 1000) {
+                        var pasthistory = localStorage.getItem("pasthistory");
+                        if (pasthistory) {
+                            var pasthistoryarray = JSON.parse(pasthistory);
+                            pasthistoryarray.push(lsDrinkHistory);
+                            localStorage.setItem("pasthistory", JSON.stringify(pasthistoryarray));
+                            olddrinkhistory = pasthistoryarray;
+                        } else {
+                            localStorage.setItem("pasthistory", JSON.stringify([lsDrinkHistory]));
+                            olddrinkhistory = [lsDrinkHistory];
+                        }
+                    } else {
+                        drinkhistory = lsDrinkHistory;
+                        vars.startDate = new Date(drinkhistory[0].time);
+                        vars.startDate.setMinutes(0);
+                    }
+                }
+            }
+            catch (e) {
+                //problem with LS. TODO: handle it
+            }
         },
                 
         handleResize: function() {
@@ -414,6 +418,13 @@ if (dev) {
             g.fillText(promilles + "‰", vars.leftx + vars.pixelsperminute * currentminutes + 10, bottomy - 20 - currentpromilles * vars.pixelsperpromille);
             
             g.restore();
+        },
+        
+        initDev: function() {
+            $("body").append('<input type="button" value="Empty localstorage" id="devEmpty" />');
+            $("body").on('click', '#devEmpty', function() {
+                localStorage.clear();
+            });
         }
     };
     
@@ -445,7 +456,7 @@ if (dev) {
         var startminutes = vars.startDate.getTime() / 1000 / 60;
         var poi = [];
         for (var i = 0; i < drinkhistory.length; i++) {
-            var minutesfromstart = drinkhistory[i].time.getTime() / 1000 / 60 - startminutes;
+            var minutesfromstart = new Date(drinkhistory[i].time).getTime() / 1000 / 60 - startminutes;
             var purealcohol = (drinkhistory[i].percent / 100) * drinkhistory[i].amount * 10 * vars.alcoholdensity;
             var d = {
                 time: minutesfromstart,
